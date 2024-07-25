@@ -1,25 +1,32 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Course } from './courses.entity';
+import { Course } from './entities/courses.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Tag } from '../tags/entities/tags.entity';
 
 @Injectable()
 export class CoursesService {
-  private courses: Course[] = [
-    {
-      id: 1,
-      name: 'test',
-      description: 'test',
-      tags: ['test'],
-    },
-  ];
+  constructor(
+    @InjectRepository(Course)
+    private readonly courseRepository: Repository<Course>,
 
-  findAll() {
-    return this.courses;
+    @InjectRepository(Tag)
+    private readonly tagRepository: Repository<Tag>,
+  ) {}
+
+  async findAll(): Promise<Course[]> {
+    return await this.courseRepository.find({
+      relations: ['tags'],
+    });
   }
 
-  findOne(id: number) {
-    const course = this.courses.find((course) => course.id === id);
+  async findOne(id: number): Promise<Course> {
+    const course: Course = await this.courseRepository.findOne({
+      where: { id },
+      relations: ['tags'],
+    });
 
     if (!course) {
       throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
@@ -28,58 +35,60 @@ export class CoursesService {
     return course;
   }
 
-  create(createCourseDto: CreateCourseDto) {
-    let id = 1;
+  async create(createCourseDto: CreateCourseDto): Promise<Course> {
+    const tags: Tag[] = await Promise.all(
+      createCourseDto.tags.map((name: string) => this.preloadTagByName(name)),
+    );
 
-    if (this.courses.length > 0) {
-      id = this.courses.reduce((maxId, obj) => {
-        return obj.id > maxId ? obj.id : maxId;
-      }, this.courses[0].id + 1);
-    }
+    const courseCreated = this.courseRepository.create({
+      ...createCourseDto,
+      tags,
+    });
 
-    const courseCreated = {
+    return this.courseRepository.save(courseCreated);
+  }
+
+  async update(id: number, updateCourseDto: UpdateCourseDto): Promise<Course> {
+    const tags: Tag[] =
+      updateCourseDto.tags &&
+      (await Promise.all(
+        updateCourseDto.tags.map((name: string) => this.preloadTagByName(name)),
+      ));
+
+    const course = await this.courseRepository.preload({
+      ...updateCourseDto,
       id,
-      name: createCourseDto.name,
-      description: createCourseDto.description,
-      tags: createCourseDto.tags,
-    };
+      tags,
+    });
 
-    this.courses.push(courseCreated);
-
-    return courseCreated;
-  }
-
-  update(id: number, updateCourseDto: UpdateCourseDto) {
-    const existingCourse = this.courses.find((course) => course.id === id);
-
-    if (!existingCourse) {
+    if (!course) {
       throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
     }
 
-    const index = this.courses.findIndex((course) => course.id === id);
-
-    const updatedCourse = {
-      name: updateCourseDto.name,
-      description: updateCourseDto.description,
-      tags: updateCourseDto.tags,
-    };
-
-    this.courses[index] = { ...updatedCourse, id: this.courses[index].id };
-
-    return this.courses[index];
+    return this.courseRepository.save(course);
   }
 
-  remove(id: number) {
-    const existingCourse = this.courses.find((course) => course.id === id);
+  async remove(id: number): Promise<void> {
+    const course = await this.courseRepository.findOne({
+      where: { id },
+    });
 
-    if (!existingCourse) {
+    if (!course) {
       throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
     }
 
-    const index = this.courses.findIndex((course) => course.id === id);
+    await this.courseRepository.remove(course);
+  }
 
-    if (index >= 0) {
-      this.courses.splice(index, 1);
+  private async preloadTagByName(name: string): Promise<Tag> {
+    const tag: Tag = await this.tagRepository.findOne({
+      where: { name },
+    });
+
+    if (tag) {
+      return tag;
     }
+
+    return this.tagRepository.create({ name });
   }
 }
