@@ -16,7 +16,7 @@ export class TagsService {
     return await this.tagRepository.find();
   }
 
-  async findOne(id: number): Promise<Tag> {
+  async findOne(id: string): Promise<Tag> {
     const tag: Tag = await this.tagRepository.findOne({
       where: { id },
     });
@@ -34,7 +34,7 @@ export class TagsService {
     return this.tagRepository.save(tag);
   }
 
-  async update(id: number, updateTagDto: UpdateTagDto): Promise<Tag> {
+  async update(id: string, updateTagDto: UpdateTagDto): Promise<Tag> {
     const tag: Tag = await this.tagRepository.preload({
       ...updateTagDto,
       id,
@@ -47,7 +47,7 @@ export class TagsService {
     return this.tagRepository.save(tag);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const tag: Tag = await this.tagRepository.findOne({
       where: { id },
     });

@@ -24,7 +24,7 @@ export class TagsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number): Promise<Tag> {
+  findOne(@Param('id') id: string): Promise<Tag> {
     return this.tagsService.findOne(id);
   }
 
@@ -35,7 +35,7 @@ export class TagsController {
 
   @Put(':id')
   update(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() updateTagDto: UpdateTagDto,
   ): Promise<Tag> {
     return this.tagsService.update(id, updateTagDto);
@@ -43,7 +43,7 @@ export class TagsController {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  remove(@Param('id') id: number): Promise<void> {
+  remove(@Param('id') id: string): Promise<void> {
     return this.tagsService.remove(id);
   }
 }
