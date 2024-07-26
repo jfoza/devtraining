@@ -45,8 +45,9 @@ devops_start () {
     if  ! docker ps | grep -F -q "devops_redis"; then
         sh dev start redis
     fi
-    if  ! docker ps | grep -F -q "postgresql16"; then
+    if ! docker ps | grep -F -q "postgresql16"; then
         sh dev start postgresql16
+        sleep 15
     fi
     cd $project_dir
 }

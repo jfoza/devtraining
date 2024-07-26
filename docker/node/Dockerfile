@@ -4,17 +4,19 @@ ENV TZ=America/Sao_Paulo
 
 WORKDIR /var/www/html
 
-# Instalar pnpm globalmente
-RUN npm install -g pnpm
+RUN npm install -g pnpm @nestjs/cli && \
+    pnpm config set registry https://registry.npmjs.org/ && \
+    pnpm config set fetch-retries 5 && \
+    pnpm config set fetch-retry-mintimeout 30000 && \
+    pnpm config set fetch-retry-maxtimeout 60000
 
-# Instalar Nest CLI globalmente
-RUN npm install -g @nestjs/cli
-
-COPY ./ ./
+COPY package.json pnpm-lock.yaml ./
 
 RUN pnpm install
 
-CMD ["pnpm", "run", "start:dev"]
+COPY ./ ./
 
-EXPOSE 3000 3001
+COPY ./docker/node/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 
+CMD ["start.sh"]
