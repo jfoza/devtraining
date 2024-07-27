@@ -21,3 +21,4 @@ services:
       - "traefik.http.routers.devtraining-app-dev.rule=Host(`app-devtraining.docker.localhost`)"
       - "traefik.http.services.devtraining-app-dev.loadbalancer.server.port=3000"
       - "traefik.http.routers.devtraining-app-dev.tls=true"
+    restart: always

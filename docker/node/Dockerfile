@@ -14,9 +14,6 @@ COPY package.json pnpm-lock.yaml ./
 
 RUN pnpm install
 
-COPY ./ ./
+COPY . .
 
-COPY ./docker/node/start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
-
-CMD ["start.sh"]
+CMD sh -c "while true; do sleep 100; done"
