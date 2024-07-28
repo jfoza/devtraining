@@ -7,6 +7,7 @@ import { CreateCoursesTagsTable1721949702639 } from '../migrations/1721949702639
 import { AddCourseIdAndTagIdToCoursesTags1721950140040 } from '../migrations/1721950140040-AddCourseIdAndTagIdToCoursesTags';
 import { Course } from '../courses/entities/courses.entity';
 import { Tag } from '../tags/entities/tags.entity';
+import { CreateUsersTable1722186793247 } from '../migrations/1722186793247-CreateUsersTable';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -28,5 +29,6 @@ export const dataSource = new DataSource({
     CreateTagsTable1721948387241,
     CreateCoursesTagsTable1721949702639,
     AddCourseIdAndTagIdToCoursesTags1721950140040,
+    CreateUsersTable1722186793247,
   ],
 });
